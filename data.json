@@ -1,0 +1,18 @@
+{
+  "title": "Guest Speaker Series",
+  "subtitle": "One tab per session. Play the game to lock in what each speaker taught.",
+  "sessions": [
+    {
+      "id": "example",
+      "speaker": "Example speaker",
+      "role": "Replace this with a real session",
+      "date": "2026-10-09",
+      "topic": "How this site works",
+      "takeaways": "Each guest session gets its own tab\nAdd key takeaways here, one per line\nPick a game type and paste in your content",
+      "game": {
+        "type": "quiz",
+        "text": "What do you click to add a new guest session?\n*The + Add session tab\nThe speaker's name\nThe score counter\n> The + Add session tab opens the editor. It only shows for people who can edit this page.\n\nHow do you mark the correct answer in a quiz?\nPut it first\n*Start the line with *\nWrite it in capitals\n> Any option can be correct. Just start its line with an asterisk.\n\nWhich game fits a list of terms and their meanings best?\n*Matching or flashcards\nSorting\nNone of them\n> Terms with meanings work as matching pairs or flashcards. Sorting suits items that belong to groups."
+      }
+    }
+  ]
+}

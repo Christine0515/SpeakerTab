@@ -1,1307 +1,573 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f7f7f4">
-  <title>Guest Speaker Arcade</title>
-
-  <style>
-    /* ===== 1. 全局样式：修改这里可以更换主题颜色 ===== */
-    :root {
-      --bg: #f7f7f4;
-      --surface: #ffffff;
-      --text: #20251f;
-      --muted: #777d74;
-      --primary: #365d4b;
-      --primary-light: #e5eee7;
-      --border: #e7e8e1;
-      --correct: #26734d;
-      --wrong: #bd4848;
-      --radius: 18px;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", sans-serif;
-      line-height: 1.6;
-    }
-
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-
-    button:focus-visible, input:focus-visible {
-      outline: 3px solid #a3cbb0;
-      outline-offset: 3px;
-    }
-
-    .container {
-      width: min(1060px, calc(100% - 36px));
-      margin: 0 auto;
-    }
-
-    /* ===== 2. 顶部品牌区域 ===== */
-    header {
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,.8);
-    }
-
-    .header-inner {
-      min-height: 76px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .brand {
-      font-weight: 850;
-      font-size: 20px;
-      letter-spacing: -1px;
-    }
-
-    .brand span { color: var(--primary); }
-
-    .semester {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    /* ===== 3. 页面介绍 ===== */
-    .hero { padding: 46px 0 24px; }
-
-    .eyebrow {
-      color: var(--primary);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 10px 0;
-      font-size: clamp(30px, 5vw, 48px);
-      line-height: 1.12;
-      letter-spacing: -2px;
-    }
-
-    .hero p {
-      max-width: 620px;
-      color: var(--muted);
-      margin: 12px 0 0;
-    }
-
-    /* ===== 4. 讲师 Tabs ===== */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 8px 0 16px;
-      scrollbar-width: thin;
-    }
-
-    .tab {
-      flex: 0 0 auto;
-      min-width: 150px;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface);
-      text-align: left;
-      color: var(--text);
-      transition: .2s;
-    }
-
-    .tab:hover { border-color: var(--primary); }
-
-    .tab.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: white;
-    }
-
-    .tab-name {
-      display: block;
-      font-weight: 750;
-      font-size: 14px;
-    }
-
-    .tab-type {
-      display: block;
-      margin-top: 3px;
-      font-size: 11px;
-      opacity: .75;
-    }
-
-    /* ===== 5. 讲座信息与进度 ===== */
-    .lecture-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-      padding: 24px 0 18px;
-    }
-
-    h2 {
-      font-size: clamp(23px, 4vw, 30px);
-      line-height: 1.2;
-      letter-spacing: -.8px;
-      margin: 5px 0 8px;
-    }
-
-    .lecture-description {
-      color: var(--muted);
-      max-width: 650px;
-      margin: 0;
-      font-size: 14px;
-    }
-
-    .score-box {
-      min-width: 105px;
-      padding: 12px 15px;
-      background: var(--primary-light);
-      border-radius: 14px;
-      text-align: center;
-    }
-
-    .score-number {
-      font-size: 25px;
-      font-weight: 850;
-      color: var(--primary);
-    }
-
-    .score-label {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .progress-track {
-      height: 5px;
-      background: #e5e6df;
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 22px;
-    }
-
-    .progress-fill {
-      width: 0;
-      height: 100%;
-      background: var(--primary);
-      transition: width .3s;
-    }
-
-    /* ===== 6. 游戏卡片 ===== */
-    .game-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: clamp(20px, 4vw, 32px);
-      margin-bottom: 50px;
-      box-shadow: 0 8px 35px rgba(30,40,30,.035);
-    }
-
-    .game-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .game-badge {
-      display: inline-flex;
-      padding: 6px 10px;
-      background: var(--primary-light);
-      color: var(--primary);
-      border-radius: 7px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .7px;
-    }
-
-    .question-count {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .question {
-      font-size: clamp(19px, 3vw, 25px);
-      line-height: 1.4;
-      font-weight: 750;
-      letter-spacing: -.4px;
-      margin: 0 0 22px;
-    }
-
-    /* Quiz options */
-    .options {
-      display: grid;
-      gap: 10px;
-    }
-
-    .option {
-      width: 100%;
-      padding: 15px 16px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      text-align: left;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: white;
-      color: var(--text);
-      transition: .2s;
-    }
-
-    .option:hover:not(:disabled) {
-      border-color: var(--primary);
-      background: #fafcf9;
-    }
-
-    .option:disabled { cursor: default; }
-
-    .option-letter {
-      display: grid;
-      place-items: center;
-      flex: 0 0 30px;
-      height: 30px;
-      border-radius: 8px;
-      background: #f0f1ec;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .option.correct {
-      border-color: var(--correct);
-      background: #edf7f0;
-    }
-
-    .option.correct .option-letter {
-      background: var(--correct);
-      color: white;
-    }
-
-    .option.wrong {
-      border-color: var(--wrong);
-      background: #fff0ef;
-    }
-
-    .option.wrong .option-letter {
-      background: var(--wrong);
-      color: white;
-    }
-
-    /* Feedback and buttons */
-    .feedback {
-      display: none;
-      margin-top: 18px;
-      padding: 14px 16px;
-      background: #f5f6f1;
-      border-radius: 12px;
-      font-size: 14px;
-    }
-
-    .feedback.show { display: block; }
-    .feedback strong { display: block; margin-bottom: 4px; }
-    .feedback p { margin: 0; color: #555c53; }
-
-    .feedback.success { background: #edf7f0; }
-    .feedback.error { background: #fff0ef; }
-
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 22px;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 18px;
-      background: white;
-      color: var(--text);
-      font-weight: 750;
-      font-size: 13px;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: white;
-    }
-
-    .btn:hover { opacity: .86; }
-    .btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    /* ===== 7. 拖拽匹配游戏 ===== */
-    .match-instruction {
-      color: var(--muted);
-      font-size: 13px;
-      margin: -10px 0 22px;
-    }
-
-    .match-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .match-column-title {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .match-list {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .match-item {
-      border: 1px solid var(--border);
-      background: white;
-      border-radius: 12px;
-      padding: 13px;
-      font-size: 13px;
-      min-height: 56px;
-      overflow-wrap: anywhere;
-    }
-
-    .match-item.term {
-      cursor: grab;
-      font-weight: 750;
-      touch-action: manipulation;
-    }
-
-    .match-item.term.selected {
-      border-color: var(--primary);
-      background: var(--primary-light);
-    }
-
-    .match-item.term.used {
-      opacity: .45;
-      cursor: default;
-    }
-
-    .match-item.drop-target {
-      cursor: pointer;
-      border-style: dashed;
-    }
-
-    .match-item.drop-target.over {
-      border-color: var(--primary);
-      background: var(--primary-light);
-    }
-
-    .match-item.matched {
-      border-color: #9cc9aa;
-      background: #edf7f0;
-      border-style: solid;
-    }
-
-    .match-item.matched.incorrect {
-      border-color: #e7aaaa;
-      background: #fff0ef;
-    }
-
-    .match-item .matched-term {
-      display: block;
-      font-size: 11px;
-      color: var(--primary);
-      font-weight: 800;
-      margin-bottom: 3px;
-    }
-
-    .match-result {
-      margin-top: 15px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    /* ===== 8. 填空游戏 ===== */
-    .fill-form {
-      display: flex;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    .fill-input {
-      min-width: 0;
-      flex: 1;
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      background: white;
-      color: var(--text);
-    }
-
-    .hint {
-      margin: 14px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .completion {
-      padding: 24px;
-      text-align: center;
-      border-radius: 14px;
-      background: var(--primary-light);
-    }
-
-    .completion .big {
-      font-size: 42px;
-      font-weight: 900;
-      color: var(--primary);
-    }
-
-    footer {
-      text-align: center;
-      padding: 0 0 30px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    @media (max-width: 600px) {
-      .container { width: calc(100% - 24px); }
-      .header-inner { min-height: 64px; }
-      .hero { padding-top: 32px; }
-      .lecture-heading { flex-direction: column; }
-      .score-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-        padding: 8px 12px;
-      }
-      .score-number { font-size: 20px; }
-      .match-grid { grid-template-columns: 1fr; gap: 16px; }
-      .fill-form { flex-direction: column; }
-      .fill-form .btn { width: 100%; }
-      .game-card { margin-bottom: 30px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
-
 <body>
-  <header>
-    <div class="container header-inner">
-      <div class="brand">SPEAKER<span>LAB.</span></div>
-      <div class="semester">Guest Lecture Series · Semester 1</div>
+<title>Guest Speaker Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a row of ticket-stub tabs (one per talk) over a single stage where that talk's takeaways sit beside its game. */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --ink:#18233b; --muted:#5b6578; --line:#d5dbe5;
+  --accent:#2747d6; --accent-ink:#ffffff; --mark:#f2b33d; --good:#1f8a57; --bad:#c43d3d;
+  --good-bg:#e3f4ea; --bad-bg:#fbe7e7; --chip:#e6eaf2;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141d; --surface:#181e2b; --ink:#e8ecf4; --muted:#9aa4b8; --line:#2b3446;
+  --accent:#7f97ff; --accent-ink:#0e1322; --mark:#f2b33d; --good:#4fc68a; --bad:#ef7a7a;
+  --good-bg:#16302a; --bad-bg:#3a1e22; --chip:#232b3c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141d; --surface:#181e2b; --ink:#e8ecf4; --muted:#9aa4b8; --line:#2b3446;
+  --accent:#7f97ff; --accent-ink:#0e1322; --mark:#f2b33d; --good:#4fc68a; --bad:#ef7a7a;
+  --good-bg:#16302a; --bad-bg:#3a1e22; --chip:#232b3c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.label{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between}
+header.top h1{font-size:clamp(30px,5vw,48px);font-weight:800;letter-spacing:-.02em}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px;color:var(--muted)}
+.ghost:hover{color:var(--ink);border-color:var(--ink)}
+
+/* Ticket-stub tabs */
+.tabs{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tab{flex:0 0 auto;min-width:150px;max-width:220px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px 10px 18px;position:relative;display:grid;gap:2px}
+.tab::before{content:"";position:absolute;left:-1px;top:50%;width:10px;height:18px;margin-top:-9px;background:var(--bg);border:1px solid var(--line);border-left:none;border-radius:0 10px 10px 0}
+.tab .no{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.tab .nm{font-family:var(--f-display);font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab .tp{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-selected="true"] .no,.tab[aria-selected="true"] .tp{color:var(--bg);opacity:.75}
+.tab.add{border-style:dashed;background:transparent;color:var(--accent);min-width:130px;place-content:center}
+.tab.add .nm{font-size:15px}
+
+/* Stage */
+.stage{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:760px){.stage{grid-template-columns:1fr}}
+.brief{display:grid;gap:14px;padding-top:4px}
+.brief h2{font-size:28px;font-weight:700}
+.brief .who{color:var(--muted);font-size:15px}
+.brief ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.brief li{padding-left:18px;position:relative}
+.brief li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--mark);border-radius:2px}
+.brief .actions{display:flex;gap:8px;flex-wrap:wrap}
+.game{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;min-width:0;display:grid;gap:16px}
+.game-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.game-head h3{font-size:20px}
+.score{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;background:var(--chip);padding:4px 10px;border-radius:999px}
+.btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:8px;padding:10px 16px;font-weight:700}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.alt{background:var(--chip);color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.empty{color:var(--muted);padding:24px 0}
+.note{font-size:14px;color:var(--muted)}
+
+/* Quiz */
+.q{font-family:var(--f-display);font-size:22px;font-weight:700;line-height:1.25}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:12px 14px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:var(--good-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default}
+.explain{border-left:4px solid var(--mark);padding:6px 12px;background:var(--bg);border-radius:0 8px 8px 0}
+.progress{height:6px;background:var(--chip);border-radius:6px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+/* Match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:10px;align-content:start;min-width:0}
+.card{text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;overflow-wrap:anywhere}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.card.done{border-color:var(--good);background:var(--good-bg);opacity:.7;cursor:default}
+.card.shake{border-color:var(--bad);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Flashcards */
+.flip{perspective:1000px;cursor:pointer;border:none;background:none;padding:0;width:100%}
+.flip-in{position:relative;min-height:220px;transition:transform .45s;transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:2px solid var(--line);display:grid;place-items:center;padding:24px;text-align:center;background:var(--bg)}
+.face.back{transform:rotateY(180deg);background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.face .big{font-family:var(--f-display);font-size:24px;font-weight:700;line-height:1.2}
+.face .hint{position:absolute;bottom:10px;font-family:var(--f-mono);font-size:11px;opacity:.6;letter-spacing:.06em}
+
+/* Sort */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:44px}
+.chip{background:var(--chip);border:2px solid transparent;border-radius:999px;padding:6px 14px;font-size:15px}
+.chip.sel{border-color:var(--accent)}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.bucket{text-align:left;border:2px dashed var(--line);border-radius:12px;padding:12px;background:var(--bg);display:grid;gap:8px;align-content:start;min-height:110px}
+.bucket.ready{border-color:var(--accent)}
+.bucket h4{margin:0;font-family:var(--f-display);font-size:16px}
+.bucket .in{display:flex;flex-wrap:wrap;gap:6px}
+.bucket .in span{font-size:13px;background:var(--good-bg);color:var(--ink);border-radius:999px;padding:3px 10px}
+
+/* Editor */
+.editor{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.editor{grid-template-columns:1fr}}
+.form{display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.form h2{font-size:24px}
+.field{display:grid;gap:6px}
+.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+.field textarea{min-height:90px;resize:vertical;font-family:var(--f-mono);font-size:13px;line-height:1.5}
+.field textarea#f-game{min-height:220px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+.howto{font-size:13px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px;white-space:pre-wrap;font-family:var(--f-mono);overflow-x:auto}
+.danger{color:var(--bad);border-color:var(--bad)}
+.status{font-size:14px;min-height:1.4em}
+.status.err{color:var(--bad)}
+.status.ok{color:var(--good)}
+.preview-label{margin-bottom:8px}
+.publish-bar{display:grid;gap:12px;background:var(--surface);border:2px solid var(--mark);border-radius:12px;padding:14px 16px}
+.publish-bar a.btn{text-decoration:none;display:inline-block}
+.copybox{width:100%;min-height:120px;font-family:var(--f-mono);font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="label" id="eyebrow">Guest lectures · Fall 2026</div>
+      <h1 id="site-title">Guest Speaker Series</h1>
+      <p id="site-sub">One tab per session. Play the game to lock in what each speaker taught.</p>
     </div>
+    <button class="ghost" id="edit-site" hidden>Edit title</button>
   </header>
+  <div class="publish-bar" id="publish-bar" role="status" hidden></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Guest sessions"></nav>
+  <main id="main"></main>
+</div>
 
-  <main class="container">
-    <section class="hero">
-      <div class="eyebrow">Learn by playing</div>
-      <h1>Good talks.<br>Better takeaways.</h1>
-      <p>
-        Revisit this semester's guest lectures through quick interactive
-        challenges. Choose a speaker, test your knowledge, and see what sticks.
-      </p>
-    </section>
+<script id="fallback-data" type="application/json">
+{"title":"Guest Speaker Series","subtitle":"One tab per session. Play the game to lock in what each speaker taught.","sessions":[{"id":"example","speaker":"Example speaker","role":"Replace this with a real session","date":"2026-10-09","topic":"How this site works","takeaways":"Each guest session gets its own tab\nAdd key takeaways here, one per line\nPick a game type and paste in your content","game":{"type":"quiz","text":"What do you click to add a new guest session?\n*The + Add session tab\nThe speaker's name\nThe score counter\n> The + Add session tab opens the editor. It only shows for people who can edit this page.\n\nHow do you mark the correct answer in a quiz?\nPut it first\n*Start the line with *\nWrite it in capitals\n> Any option can be correct. Just start its line with an asterisk.\n\nWhich game fits a list of terms and their meanings best?\n*Matching or flashcards\nSorting\nNone of them\n> Terms with meanings work as matching pairs or flashcards. Sorting suits items that belong to groups."}}]}
+</script>
 
-    <!-- Tabs are generated automatically from the lectures array -->
-    <nav class="tabs" id="tabs" aria-label="Choose a guest speaker"></nav>
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const el = (tag, attrs={}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v === true) n.setAttribute(k,'');
+    else if (v !== false && v != null) n.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return n;
+};
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const lines = t => (t||'').split('\n').map(s=>s.trim()).filter(Boolean);
 
-    <!-- Lecture title, description, score and game -->
-    <section aria-live="polite">
-      <div class="lecture-heading">
-        <div>
-          <div class="eyebrow" id="lectureNumber">LECTURE 01</div>
-          <h2 id="lectureTitle"></h2>
-          <p class="lecture-description" id="lectureDescription"></p>
-        </div>
+const GAME_TYPES = {
+  quiz:  {name:'Quiz', help:
+`One question per block, blank line between blocks.
+First line = the question.
+Each next line = an answer option.
+Start the correct option with *
+Optional: a line starting with > explains the answer.
 
-        <div class="score-box">
-          <div class="score-number" id="score">0</div>
-          <div class="score-label">POINTS EARNED</div>
-        </div>
-      </div>
+What does CAC stand for?
+*Customer acquisition cost
+Cost after commission
+Capital allocation cycle
+> CAC is what you spend to win one new customer.`},
+  match: {name:'Matching pairs', help:
+`One pair per line: term = meaning
 
-      <div
-        class="progress-track"
-        role="progressbar"
-        aria-label="Lecture game progress"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow="0"
-        id="progressTrack"
-      >
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
+Moat = A lasting advantage competitors can't copy
+Burn rate = Cash a company spends each month
+Runway = Months until the cash runs out`},
+  flash: {name:'Flashcards', help:
+`One card per line: front = back
 
-      <div class="game-card" id="gameCard"></div>
-    </section>
-  </main>
+Speaker's #1 rule for pitching = Lead with the problem, not the product
+Best question to ask a mentor = What would you do in my place?`},
+  sort:  {name:'Sort into groups', help:
+`One group per line: Group name: item; item; item
 
-  <footer>
-    SPEAKERLAB. · Learn something. Keep something.
-  </footer>
+Do: Ask follow-up questions; Send a thank-you note
+Don't: Read your slides aloud; Skip the research`}
+};
 
-  <script>
-    /* ==========================================================
-       EDIT YOUR CONTENT HERE
-       Add, remove or edit objects inside the lectures array.
-       Each lecture has its own title, speaker, game and questions.
-       Game types: "quiz", "match", "fill"
-       ========================================================== */
-
-    const lectures = [
-      {
-        speaker: "Alex Morgan",
-        role: "Brand Strategy",
-        title: "Building Brands That Matter",
-        description:
-          "Explore how brands create meaning, connect with audiences, and stand out in a competitive market.",
-
-        game: "quiz",
-
-        questions: [
-          {
-            question: "What is the main purpose of brand positioning?",
-            options: [
-              "To make every product cheaper",
-              "To establish a distinct place in consumers' minds",
-              "To increase the number of social media posts",
-              "To copy successful competitors"
-            ],
-            answer: 1,
-            explanation:
-              "Brand positioning defines how a brand should be perceived relative to competitors."
-          },
-          {
-            question: "Which is the strongest starting point for a brand strategy?",
-            options: [
-              "Choosing a random colour palette",
-              "Following every design trend",
-              "Understanding the target audience",
-              "Copying a competitor's tagline"
-            ],
-            answer: 2,
-            explanation:
-              "Audience needs and motivations help determine a relevant brand promise."
-          },
-          {
-            question: "What makes a brand distinctive?",
-            options: [
-              "A clear and recognisable identity",
-              "Using as many fonts as possible",
-              "Changing its message every day",
-              "Avoiding all emotional connections"
-            ],
-            answer: 0,
-            explanation:
-              "A distinctive identity helps consumers recognise and remember the brand."
-          }
-        ]
-      },
-
-      {
-        speaker: "Jamie Lee",
-        role: "Creative Thinking",
-        title: "From Insight to Big Idea",
-        description:
-          "Match key creative concepts with their meanings and revisit the foundations of an effective campaign.",
-
-        game: "match",
-
-        pairs: [
-          {
-            term: "Consumer Insight",
-            definition:
-              "A meaningful truth about people's motivations or behaviour."
-          },
-          {
-            term: "Big Idea",
-            definition:
-              "The central creative thought that connects a campaign."
-          },
-          {
-            term: "Target Audience",
-            definition:
-              "The specific group a communication is designed to reach."
-          },
-          {
-            term: "Call to Action",
-            definition:
-              "A prompt that encourages the audience to take a next step."
-          }
-        ]
-      },
-
-      {
-        speaker: "Taylor Chen",
-        role: "Advertising & Media",
-        title: "Making Messages Stick",
-        description:
-          "Complete the key concepts about memorable communication and effective advertising.",
-
-        game: "fill",
-
-        questions: [
-          {
-            question:
-              "A short phrase that captures a brand or campaign's message is called a ______.",
-            answers: ["tagline", "slogan"],
-            hint: "It is often a short, memorable line associated with a brand.",
-            explanation:
-              "A tagline is a concise line that expresses or reinforces a brand's message."
-          },
-          {
-            question:
-              "The group of people a campaign is designed to reach is its target ______.",
-            answers: ["audience", "market"],
-            hint: "Think about who the campaign is speaking to.",
-            explanation:
-              "Target audience refers to the people a campaign aims to reach."
-          },
-          {
-            question:
-              "A measurable result a campaign aims to achieve is a communication ______.",
-            answers: ["objective", "goal"],
-            hint: "It describes what the campaign is trying to accomplish.",
-            explanation:
-              "An objective sets out the intended result of a campaign."
-          }
-        ]
+function parseGame(g){
+  const t = g?.text || '';
+  switch(g?.type){
+    case 'quiz': return t.split(/\n\s*\n/).map(b=>{
+      const ls = lines(b); if (!ls.length) return null;
+      const q = ls[0]; let explain = '';
+      const opts = [];
+      for (const l of ls.slice(1)){
+        if (l.startsWith('>')) explain = l.slice(1).trim();
+        else if (l.startsWith('*')) opts.push({text:l.slice(1).trim(), ok:true});
+        else opts.push({text:l, ok:false});
       }
+      return opts.length >= 2 && opts.some(o=>o.ok) ? {q, opts, explain} : null;
+    }).filter(Boolean);
+    case 'match': case 'flash': return lines(t).map(l=>{
+      const i = l.indexOf('='); if (i<1) return null;
+      const a = l.slice(0,i).trim(), b = l.slice(i+1).trim();
+      return a && b ? {a,b} : null;
+    }).filter(Boolean);
+    case 'sort': return lines(t).map(l=>{
+      const i = l.indexOf(':'); if (i<1) return null;
+      const name = l.slice(0,i).trim(); const rest = l.slice(i+1);
+      const items = rest.split(rest.includes(';') ? ';' : ',').map(s=>s.trim()).filter(Boolean);
+      return items.length ? {name, items} : null;
+    }).filter(Boolean);
+  }
+  return [];
+}
 
-      /*
-      ===== ADD ANOTHER LECTURE =====
+/* ---------- Games ---------- */
+function emptyGame(msg){ return el('p',{class:'empty'}, msg || 'No game content yet. Open the editor to add some.'); }
 
-      Copy one of the objects above and change its content.
-
-      For a quiz:
-      game: "quiz"
-      questions: [
-        {
-          question: "Your question?",
-          options: ["Answer A", "Answer B", "Answer C", "Answer D"],
-          answer: 0, // Correct option index starts at 0
-          explanation: "Why this answer is correct."
-        }
-      ]
-
-      For matching:
-      game: "match"
-      pairs: [
-        { term: "Concept A", definition: "Its definition." },
-        { term: "Concept B", definition: "Its definition." }
-      ]
-
-      For fill-in-the-blank:
-      game: "fill"
-      questions: [
-        {
-          question: "The missing word is ______.",
-          answers: ["answer", "another accepted answer"],
-          hint: "A helpful clue.",
-          explanation: "The answer explained."
-        }
-      ]
-      */
-    ];
-
-    /* ===== Game state: preserved when switching speakers ===== */
-
-    const states = lectures.map(lecture => ({
-      index: 0,
-      score: 0,
-      answered: {},
-      matchAssignments: {},
-      selectedTerm: null,
-      fillValue: "",
-      fillFeedback: null
-    }));
-
-    let current = 0;
-    let draggedTerm = null;
-
-    const $ = id => document.getElementById(id);
-
-    function escapeHTML(value) {
-      return String(value).replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]);
+function quizGame(data){
+  const box = el('div',{class:'game'});
+  let i=0, score=0, order=[];
+  const start = () => { i=0; score=0; order = data.map(d=>({...d, opts:shuffle(d.opts)})); draw(); };
+  function draw(){
+    box.replaceChildren();
+    const sc = el('span',{class:'score'}, `${score} / ${data.length}`);
+    box.append(el('div',{class:'game-head'}, el('h3',{},'Quiz'), sc));
+    if (i >= order.length){
+      const pct = Math.round(score/data.length*100);
+      box.append(el('div',{class:'progress'}, el('span',{style:'width:100%'})),
+        el('p',{class:'q'}, pct===100 ? 'Perfect score.' : pct>=60 ? `You got ${score} of ${data.length}. Solid.` : `You got ${score} of ${data.length}. Worth another round.`),
+        el('div',{class:'row'}, el('button',{class:'btn',onclick:start},'Play again')));
+      return;
     }
+    const cur = order[i];
+    box.append(el('div',{class:'progress'}, el('span',{style:`width:${i/order.length*100}%`})),
+      el('div',{class:'label'}, `Question ${i+1} of ${order.length}`),
+      el('p',{class:'q'}, cur.q));
+    const opts = el('div',{class:'opts'});
+    const after = el('div',{class:'row'});
+    cur.opts.forEach(o=>{
+      const b = el('button',{class:'opt',onclick:()=>{
+        [...opts.children].forEach((c,k)=>{ c.disabled=true; if (cur.opts[k].ok) c.classList.add('right'); });
+        if (o.ok){ score++; sc.textContent = `${score} / ${data.length}`; } else b.classList.add('wrong');
+        if (cur.explain) opts.after(el('p',{class:'explain'}, cur.explain));
+        after.append(el('button',{class:'btn',onclick:()=>{i++;draw();}}, i+1<order.length ? 'Next question' : 'See result'));
+        after.querySelector('button').focus();
+      }}, o.text);
+      opts.append(b);
+    });
+    box.append(opts, after);
+  }
+  start(); return box;
+}
 
-    function shuffle(items) {
-      const result = [...items];
-      for (let i = result.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [result[i], result[j]] = [result[j], result[i]];
-      }
-      return result;
+function matchGame(data){
+  const box = el('div',{class:'game'});
+  function start(){
+    box.replaceChildren();
+    let pick=null, found=0, tries=0;
+    const sc = el('span',{class:'score'}, `0 / ${data.length} matched`);
+    box.append(el('div',{class:'game-head'}, el('h3',{},'Match the pairs'), sc),
+      el('p',{class:'note'}, 'Pick a term on the left, then its meaning on the right.'));
+    const left = el('div',{class:'col'}), right = el('div',{class:'col'});
+    const lefts = shuffle(data.map((d,k)=>({t:d.a,k}))), rights = shuffle(data.map((d,k)=>({t:d.b,k})));
+    const mk = (item, side) => el('button',{class:'card',onclick:e=>{
+      const b=e.currentTarget; if (b.classList.contains('done')) return;
+      if (side==='L'){ left.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); pick={b,k:item.k}; return; }
+      if (!pick) { b.classList.add('shake'); setTimeout(()=>b.classList.remove('shake'),300); return; }
+      tries++;
+      if (pick.k===item.k){ [pick.b,b].forEach(x=>{x.classList.remove('sel');x.classList.add('done');x.disabled=true;}); found++; pick=null;
+        sc.textContent = `${found} / ${data.length} matched`;
+        if (found===data.length) box.append(el('div',{class:'row'}, el('p',{class:'q'},`All matched in ${tries} tries.`), el('button',{class:'btn',onclick:start},'Play again')));
+      } else { [pick.b,b].forEach(x=>{x.classList.add('shake');setTimeout(()=>x.classList.remove('shake'),300);}); }
+    }}, item.t);
+    lefts.forEach(it=>left.append(mk(it,'L'))); rights.forEach(it=>right.append(mk(it,'R')));
+    box.append(el('div',{class:'match'}, left, right));
+  }
+  start(); return box;
+}
+
+function flashGame(data){
+  const box = el('div',{class:'game'});
+  let deck=[], i=0, known=0;
+  const start = () => { deck=shuffle(data); i=0; known=0; draw(); };
+  function draw(){
+    box.replaceChildren();
+    box.append(el('div',{class:'game-head'}, el('h3',{},'Flashcards'), el('span',{class:'score'}, `Knew ${known} · Card ${Math.min(i+1,deck.length)} / ${deck.length}`)));
+    if (i>=deck.length){
+      box.append(el('p',{class:'q'}, `You knew ${known} of ${deck.length} cards.`), el('div',{class:'row'}, el('button',{class:'btn',onclick:start},'Shuffle and go again')));
+      return;
     }
+    const c = deck[i];
+    const card = el('button',{class:'flip','aria-label':'Flip card',onclick:()=>card.classList.toggle('on')},
+      el('div',{class:'flip-in'},
+        el('div',{class:'face'}, el('div',{class:'big'}, c.a), el('span',{class:'hint'},'TAP TO FLIP')),
+        el('div',{class:'face back'}, el('div',{class:'big'}, c.b))));
+    box.append(card, el('div',{class:'row'},
+      el('button',{class:'btn alt',onclick:()=>{i++;draw();}},'Still learning'),
+      el('button',{class:'btn',onclick:()=>{known++;i++;draw();}},'I knew it')));
+  }
+  start(); return box;
+}
 
-    function lectureState() {
-      return states[current];
+function sortGame(data){
+  const box = el('div',{class:'game'});
+  function start(){
+    box.replaceChildren();
+    const all = shuffle(data.flatMap((g,k)=>g.items.map(t=>({t,k}))));
+    let pick=null, right=0, wrong=0, left=all.length;
+    const sc = el('span',{class:'score'}, `0 placed · 0 missed`);
+    const pool = el('div',{class:'pool'});
+    const buckets = el('div',{class:'buckets'});
+    box.append(el('div',{class:'game-head'}, el('h3',{},'Sort into groups'), sc),
+      el('p',{class:'note'}, 'Pick an item, then the group it belongs to.'), pool, buckets);
+    all.forEach(it=>pool.append(el('button',{class:'chip',onclick:e=>{
+      pool.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));
+      e.currentTarget.classList.add('sel'); pick={b:e.currentTarget,it};
+      buckets.querySelectorAll('.bucket').forEach(x=>x.classList.add('ready'));
+    }}, it.t)));
+    data.forEach((g,k)=>{
+      const inner = el('div',{class:'in'});
+      const b = el('button',{class:'bucket',onclick:()=>{
+        if (!pick) return;
+        if (pick.it.k===k){ right++; left--; inner.append(el('span',{},pick.it.t)); pick.b.remove(); pick=null;
+          buckets.querySelectorAll('.bucket').forEach(x=>x.classList.remove('ready'));
+          if (!left) box.append(el('div',{class:'row'}, el('p',{class:'q'}, wrong ? `Done, with ${wrong} miss${wrong>1?'es':''}.` : 'All sorted, no misses.'), el('button',{class:'btn',onclick:start},'Play again')));
+        } else { wrong++; b.classList.add('shake'); pick.b.classList.add('shake'); const pb=pick.b; setTimeout(()=>{b.classList.remove('shake');pb.classList.remove('shake');},300); }
+        sc.textContent = `${right} placed · ${wrong} missed`;
+      }}, el('h4',{}, g.name), inner);
+      buckets.append(b);
+    });
+  }
+  start(); return box;
+}
+
+function renderGame(game){
+  const data = parseGame(game);
+  if (!data.length) { const b = el('div',{class:'game'}); b.append(emptyGame()); return b; }
+  if (game.type==='match' && data.length<2) { const b = el('div',{class:'game'}); b.append(emptyGame('Add at least two pairs to play matching.')); return b; }
+  return ({quiz:quizGame, match:matchGame, flash:flashGame, sort:sortGame})[game.type](data);
+}
+
+/* ---------- State ---------- */
+let state = JSON.parse($('#fallback-data').textContent);
+let current = null;
+let canEdit = false, artifactApi = null;
+
+const sorted = () => state.sessions.slice().sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+const fmtDate = d => { if (!d) return 'Date TBC'; const x = new Date(d+'T12:00:00'); return isNaN(x) ? d : x.toLocaleDateString(undefined,{day:'numeric',month:'short'}); };
+
+function renderHeader(){
+  $('#site-title').textContent = state.title || 'Guest Speaker Series';
+  $('#site-sub').textContent = state.subtitle || '';
+  $('#edit-site').hidden = !canEdit;
+}
+
+function renderTabs(){
+  const tabs = $('#tabs'); tabs.replaceChildren();
+  sorted().forEach((s,k)=>{
+    tabs.append(el('button',{class:'tab',role:'tab','aria-selected':String(s.id===current),onclick:()=>select(s.id)},
+      el('span',{class:'no'}, `TALK ${String(k+1).padStart(2,'0')} · ${fmtDate(s.date).toUpperCase()}`),
+      el('span',{class:'nm'}, s.speaker || 'Untitled speaker'),
+      el('span',{class:'tp'}, s.topic || '')));
+  });
+  if (canEdit) tabs.append(el('button',{class:'tab add',onclick:()=>openEditor(null)}, el('span',{class:'nm'},'+ Add session')));
+}
+
+function select(id){
+  current = id; try{ history.replaceState(null,'','#'+id); }catch(e){}
+  renderTabs(); renderSession();
+}
+
+function renderSession(){
+  const main = $('#main');
+  const s = state.sessions.find(x=>x.id===current);
+  if (!s){
+    main.replaceChildren(el('div',{class:'game'}, el('p',{class:'empty'}, canEdit ? 'No sessions yet. Use + Add session to create the first tab.' : 'No sessions yet. Check back after the first guest talk.')));
+    return;
+  }
+  const tk = lines(s.takeaways);
+  main.replaceChildren(el('section',{class:'stage'},
+    el('div',{class:'brief'},
+      el('div',{class:'label'}, fmtDate(s.date) + ' · ' + (GAME_TYPES[s.game?.type]?.name || 'Game')),
+      el('h2',{}, s.topic || 'Untitled session'),
+      el('div',{class:'who'}, el('strong',{}, s.speaker || ''), s.role ? ' · ' + s.role : ''),
+      tk.length ? el('div',{}, el('div',{class:'label',style:'margin-bottom:8px'},'Key takeaways'), el('ul',{}, tk.map(t=>el('li',{},t)))) : null,
+      canEdit ? el('div',{class:'actions'}, el('button',{class:'ghost',onclick:()=>openEditor(s.id)},'Edit this session')) : null),
+    renderGame(s.game)));
+}
+
+function renderAll(){
+  renderHeader();
+  if (!state.sessions.find(x=>x.id===current)) current = sorted()[0]?.id || null;
+  renderTabs(); renderSession();
+}
+
+/* ---------- Saving ---------- */
+const STATIC = !window.claude?.use;           // true on GitHub Pages / plain hosting
+const DRAFT_KEY = 'speakertab-draft';
+const GH_EDIT_URL = 'https://github.com/Christine0515/SpeakerTab/edit/main/data.json';
+function storeDraft(d){ try{ d ? localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) : localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+function readDraft(){ try{ return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); }catch(e){ return null; } }
+function renderBanner(){
+  const bar = $('#publish-bar'); if (!bar) return;
+  const pending = STATIC && canEdit && !!readDraft();
+  bar.hidden = !pending; if (!pending) return;
+  const msg = el('span',{class:'note'});
+  bar.replaceChildren(
+    el('div',{}, el('strong',{},'Your changes are only in this browser.'), el('div',{class:'note'},'To put them online: 1) copy the data, 2) open data.json on GitHub, select everything, paste, then click Commit changes.')),
+    el('div',{class:'row'},
+      el('button',{class:'btn',onclick:async()=>{
+        const txt = JSON.stringify(state,null,2);
+        try{ await navigator.clipboard.writeText(txt); msg.textContent='Copied.'; }
+        catch(e){ const ta=el('textarea',{class:'copybox',readonly:true}); ta.value=txt; bar.append(ta); ta.select(); msg.textContent='Copy the selected text below.'; }
+      }},'1. Copy data'),
+      el('a',{class:'btn alt',href:GH_EDIT_URL,target:'_blank',rel:'noopener'},'2. Open data.json on GitHub'),
+      el('button',{class:'ghost',onclick:()=>{ storeDraft(null); location.reload(); }},'Discard changes'),
+      msg));
+}
+async function save(next){
+  if (STATIC){ state = next; storeDraft(next); renderBanner(); return; }
+  if (!artifactApi) throw {code:'unavailable'};
+  await artifactApi.publish({'data.json': {content: JSON.stringify(next, null, 2), contentType:'application/json'}});
+  state = next;
+}
+function saveMessage(e){
+  const c = e?.code;
+  if (c==='conflict') return 'Someone saved a newer version. The page is reloading with it; re-apply your change after.';
+  if (c==='not_writer' || c==='not_granted' || c==='consent_required') return 'This view is read-only, so changes can’t be saved here.';
+  if (c==='capability_disabled' || c==='unavailable') return 'Saving isn’t available in this view. Open the page from your claude.ai account to edit.';
+  if (c==='rate_limited') return 'Saving too often. Wait a moment, then save again.';
+  return 'Couldn’t save just now. Try again in a moment.';
+}
+
+/* ---------- Editor ---------- */
+function openEditor(id){
+  const s = id ? state.sessions.find(x=>x.id===id) : {id:null, speaker:'', role:'', date:'', topic:'', takeaways:'', game:{type:'quiz', text:''}};
+  const main = $('#main');
+  const f = (lbl, input) => el('label',{class:'field'}, el('span',{class:'label'},lbl), input);
+  const iSpeaker = el('input',{id:'f-speaker',value:s.speaker||'',placeholder:'e.g. Amira Haddad'});
+  const iRole = el('input',{id:'f-role',value:s.role||'',placeholder:'e.g. VP Strategy, Danone'});
+  const iDate = el('input',{id:'f-date',type:'date',value:s.date||''});
+  const iTopic = el('input',{id:'f-topic',value:s.topic||'',placeholder:'e.g. Pricing in inflationary markets'});
+  const iTake = el('textarea',{id:'f-take',placeholder:'One takeaway per line'}); iTake.value = s.takeaways||'';
+  const iType = el('select',{id:'f-type'}, Object.entries(GAME_TYPES).map(([k,v])=>el('option',{value:k, selected:k===s.game?.type},v.name)));
+  const iGame = el('textarea',{id:'f-game'}); iGame.value = s.game?.text||'';
+  const help = el('div',{class:'howto'});
+  const useEx = el('button',{class:'ghost',type:'button',onclick:()=>{ iGame.value = GAME_TYPES[iType.value].help.split('\n\n').slice(1).join('\n\n'); refresh(); }},'Insert example');
+  const status = el('div',{class:'status',role:'status'});
+  const prev = el('div',{});
+  const draft = () => ({...s, speaker:iSpeaker.value.trim(), role:iRole.value.trim(), date:iDate.value, topic:iTopic.value.trim(), takeaways:iTake.value, game:{type:iType.value, text:iGame.value}});
+  function refresh(){
+    help.textContent = GAME_TYPES[iType.value].help;
+    iGame.placeholder = 'Paste your game content here. Format below.';
+    const n = parseGame(draft().game).length;
+    prev.replaceChildren(el('div',{class:'label preview-label'}, `Live preview · ${n} item${n===1?'':'s'} recognised`), renderGame(draft().game));
+  }
+  [iType, iGame].forEach(x=>x.addEventListener('input', refresh));
+
+  const saveBtn = el('button',{class:'btn',type:'submit'}, id ? 'Save changes' : 'Add session');
+  const delWrap = el('div',{class:'row'});
+  if (id){
+    const askDel = el('button',{class:'ghost danger',type:'button',onclick:()=>{
+      delWrap.replaceChildren(el('span',{class:'note'},'Delete this session for everyone?'),
+        el('button',{class:'ghost danger',type:'button',onclick:async()=>{
+          status.className='status'; status.textContent='Deleting…';
+          try{ await save({...state, sessions: state.sessions.filter(x=>x.id!==id)}); current=null; renderAll(); }
+          catch(e){ status.className='status err'; status.textContent = saveMessage(e); }
+        }},'Yes, delete'),
+        el('button',{class:'ghost',type:'button',onclick:()=>delWrap.replaceChildren(askDel)},'Keep it'));
+    }},'Delete session');
+    delWrap.append(askDel);
+  }
+
+  const form = el('form',{class:'form',onsubmit:async e=>{
+    e.preventDefault();
+    const d = draft();
+    if (!d.speaker && !d.topic){ status.className='status err'; status.textContent='Add at least a speaker name or a topic.'; return; }
+    if (!d.id) d.id = 's' + Date.now().toString(36);
+    saveBtn.disabled = true; status.className='status'; status.textContent='Saving…';
+    const sessions = state.sessions.filter(x=>x.id!==d.id).concat([d]);
+    try{ await save({...state, sessions}); current = d.id; renderAll(); try{ history.replaceState(null,'','#'+d.id);}catch(_){}}
+    catch(err){ saveBtn.disabled=false; status.className='status err'; status.textContent = saveMessage(err); }
+  }},
+    el('h2',{}, id ? 'Edit session' : 'New guest session'),
+    el('div',{class:'two'}, f('Speaker', iSpeaker), f('Date', iDate)),
+    f('Role or company', iRole),
+    f('Session topic', iTopic),
+    f('Key takeaways', iTake),
+    el('div',{class:'two'}, f('Game type', iType), el('div',{class:'field',style:'align-content:end'}, useEx)),
+    f('Game content', iGame),
+    help,
+    el('div',{class:'row'}, saveBtn, el('button',{class:'btn alt',type:'button',onclick:()=>{ renderAll(); }},'Cancel')),
+    status, delWrap);
+
+  main.replaceChildren(el('section',{class:'editor'}, form, prev));
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected','false'));
+  refresh(); iSpeaker.focus();
+}
+
+function openSiteEditor(){
+  const main = $('#main');
+  const iT = el('input',{id:'f-site-title',value:state.title||''});
+  const iS = el('input',{id:'f-site-sub',value:state.subtitle||''});
+  const status = el('div',{class:'status',role:'status'});
+  main.replaceChildren(el('form',{class:'form',style:'max-width:620px',onsubmit:async e=>{
+    e.preventDefault(); status.textContent='Saving…';
+    try{ await save({...state, title:iT.value.trim(), subtitle:iS.value.trim()}); renderAll(); }
+    catch(err){ status.className='status err'; status.textContent=saveMessage(err); }
+  }}, el('h2',{},'Site title'),
+    el('label',{class:'field'}, el('span',{class:'label'},'Title'), iT),
+    el('label',{class:'field'}, el('span',{class:'label'},'Subtitle'), iS),
+    el('div',{class:'row'}, el('button',{class:'btn',type:'submit'},'Save'), el('button',{class:'btn alt',type:'button',onclick:renderAll},'Cancel')),
+    status));
+}
+$('#edit-site').addEventListener('click', openSiteEditor);
+
+/* ---------- Boot ---------- */
+async function boot(){
+  try{
+    const r = await fetch('data.json', {cache:'no-store'});
+    if (r.ok){ const j = await r.json(); if (j && Array.isArray(j.sessions)) state = j; }
+  }catch(e){}
+  const hash = (location.hash||'').slice(1);
+  if (STATIC){
+    canEdit = /[?&]edit\b/.test(location.search);
+    const d = canEdit && readDraft();
+    if (d && Array.isArray(d.sessions)){
+      if (JSON.stringify(d) === JSON.stringify(state)) storeDraft(null); else state = d;
     }
+  }
+  current = state.sessions.some(s=>s.id===hash) ? hash : null;
+  renderAll(); renderBanner();
+  if (window.claude?.use){
+    try{
+      const [user, art] = await Promise.all([claude.use('user'), claude.use('artifact')]);
+      artifactApi = art;
+      canEdit = !!(art && user && user.canEdit && await user.canEdit());
+      if (canEdit) renderAll();
+    }catch(e){}
+  }
+}
+renderAll();
+boot();
+})();
+</script>
 
-    function getQuestion() {
-      const lecture = lectures[current];
-      return lecture.questions?.[lectureState().index];
-    }
-
-    function getTotal() {
-      const lecture = lectures[current];
-      return lecture.game === "match"
-        ? lecture.pairs.length
-        : lecture.questions.length;
-    }
-
-    function getProgress() {
-      const state = lectureState();
-      const lecture = lectures[current];
-
-      if (lecture.game === "match") {
-        return Object.keys(state.matchAssignments).length;
-      }
-
-      return Object.keys(state.answered).length;
-    }
-
-    /* ===== Create speaker tabs ===== */
-
-    function renderTabs() {
-      $("tabs").innerHTML = lectures.map((lecture, i) => `
-        <button
-          class="tab ${i === current ? "active" : ""}"
-          data-tab="${i}"
-          aria-pressed="${i === current}"
-        >
-          <span class="tab-name">${escapeHTML(lecture.speaker)}</span>
-          <span class="tab-type">${escapeHTML(lecture.role)}</span>
-        </button>
-      `).join("");
-
-      $("tabs").querySelectorAll("[data-tab]").forEach(button => {
-        button.addEventListener("click", () => {
-          current = Number(button.dataset.tab);
-          render();
-        });
-      });
-    }
-
-    /* ===== Render the current lecture ===== */
-
-    function render() {
-      const lecture = lectures[current];
-      const state = lectureState();
-
-      renderTabs();
-
-      $("lectureNumber").textContent =
-        `LECTURE ${String(current + 1).padStart(2, "0")} · ${lecture.role}`;
-
-      $("lectureTitle").textContent = lecture.title;
-      $("lectureDescription").textContent = lecture.description;
-      $("score").textContent = state.score;
-
-      const progress = getProgress();
-      const total = getTotal();
-      const percent = total ? Math.round(progress / total * 100) : 0;
-
-      $("progressFill").style.width = `${percent}%`;
-      $("progressTrack").setAttribute("aria-valuenow", percent);
-
-      if (progress === total && total > 0) {
-        renderCompletion();
-      } else if (lecture.game === "quiz") {
-        renderQuiz();
-      } else if (lecture.game === "match") {
-        renderMatch();
-      } else if (lecture.game === "fill") {
-        renderFill();
-      }
-    }
-
-    function renderCompletion() {
-      const state = lectureState();
-      const total = getTotal();
-
-      $("gameCard").innerHTML = `
-        <div class="completion">
-          <div class="eyebrow">LECTURE COMPLETED</div>
-          <div class="big">${state.score}</div>
-          <h2>Nice work!</h2>
-          <p>
-            You've completed all ${total} challenges in this lecture.
-            Keep exploring the other speakers to review more concepts.
-          </p>
-          <button class="btn btn-primary" id="replay">Play Again</button>
-        </div>
-      `;
-
-      $("replay").addEventListener("click", resetCurrent);
-    }
-
-    function resetCurrent() {
-      states[current] = {
-        index: 0,
-        score: 0,
-        answered: {},
-        matchAssignments: {},
-        selectedTerm: null,
-        fillValue: "",
-        fillFeedback: null
-      };
-
-      render();
-    }
-
-    function gameHeader(type, label, index, total) {
-      return `
-        <div class="game-top">
-          <span class="game-badge">${type} · ${label}</span>
-          <span class="question-count">
-            Challenge ${index + 1} of ${total}
-          </span>
-        </div>
-      `;
-    }
-
-    function feedbackHTML(feedback) {
-      if (!feedback) return "";
-
-      return `
-        <div class="feedback show ${feedback.correct ? "success" : "error"}"
-             role="status">
-          <strong>${feedback.correct ? "✓ Correct!" : "Not quite yet."}</strong>
-          <p>${escapeHTML(feedback.message)}</p>
-        </div>
-      `;
-    }
-
-    /* ==========================================================
-       GAME 1: MULTIPLE-CHOICE QUIZ
-       ========================================================== */
-
-    function renderQuiz() {
-      const lecture = lectures[current];
-      const state = lectureState();
-      const index = state.index;
-      const q = getQuestion();
-      const answered = state.answered[index];
-
-      $("gameCard").innerHTML = `
-        ${gameHeader("GAME 01", "Quick Quiz", index, lecture.questions.length)}
-
-        <h3 class="question">${escapeHTML(q.question)}</h3>
-
-        <div class="options">
-          ${q.options.map((option, i) => {
-            let className = "option";
-
-            if (answered && i === q.answer) className += " correct";
-            if (answered && i === answered.choice && !answered.correct) {
-              className += " wrong";
-            }
-
-            return `
-              <button class="${className}" data-option="${i}"
-                ${answered ? "disabled" : ""}>
-                <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                <span>${escapeHTML(option)}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
-
-        ${feedbackHTML(answered ? {
-          correct: answered.correct,
-          message: (answered.correct ? "Well done! " : "Correct answer: " +
-            q.options[q.answer] + ". ") + q.explanation
-        } : null)}
-
-        <div class="btn-row">
-          ${answered ? `
-            <button class="btn btn-primary" id="nextQuestion">
-              ${index + 1 === lecture.questions.length
-                ? "Finish Lecture" : "Next Question →"}
-            </button>
-          ` : `
-            <button class="btn" id="skipQuestion">Skip Question</button>
-          `}
-        </div>
-      `;
-
-      $("gameCard").querySelectorAll("[data-option]").forEach(button => {
-        button.addEventListener("click", () => {
-          const choice = Number(button.dataset.option);
-          const correct = choice === q.answer;
-
-          state.answered[index] = { choice, correct };
-          if (correct) state.score += 10;
-
-          render();
-        });
-      });
-
-      const next = $("nextQuestion");
-      if (next) {
-        next.addEventListener("click", () => {
-          state.index++;
-          render();
-        });
-      }
-
-      const skip = $("skipQuestion");
-      if (skip) {
-        skip.addEventListener("click", () => {
-          // Skipping counts as completed but earns no points.
-          state.answered[index] = {
-            choice: -1,
-            correct: false,
-            skipped: true
-          };
-          render();
-        });
-      }
-    }
-
-    /* ==========================================================
-       GAME 2: DRAG-AND-DROP / TAP-TO-MATCH
-       Works on desktop and mobile.
-       ========================================================== */
-
-    function renderMatch() {
-      const lecture = lectures[current];
-      const state = lectureState();
-      const pairs = lecture.pairs;
-
-      // Keep a consistent randomized order for the definitions.
-      if (!state.definitionOrder) {
-        state.definitionOrder = shuffle(pairs.map((_, i) => i));
-      }
-
-      const assignments = state.matchAssignments;
-      const usedTerms = Object.values(assignments);
-      const selected = state.selectedTerm;
-
-      $("gameCard").innerHTML = `
-        ${gameHeader("GAME 02", "Match It", getProgress(), pairs.length)}
-
-        <h3 class="question">Connect each concept to its meaning.</h3>
-        <p class="match-instruction">
-          Drag a concept onto a definition, or tap a concept and then its
-          matching definition. Incorrect matches can be tried again.
-        </p>
-
-        <div class="match-grid">
-          <div>
-            <div class="match-column-title">Concepts</div>
-            <div class="match-list">
-              ${pairs.map((pair, i) => {
-                const used = usedTerms.includes(i);
-                return `
-                  <div class="match-item term
-                    ${used ? "used" : ""}
-                    ${selected === i ? "selected" : ""}"
-                    draggable="${!used}"
-                    role="button"
-                    tabindex="${used ? "-1" : "0"}"
-                    aria-label="Concept: ${escapeHTML(pair.term)}"
-                    data-term="${i}"
-                    ${used ? 'aria-disabled="true"' : ""}>
-                    ${escapeHTML(pair.term)}
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          </div>
-
-          <div>
-            <div class="match-column-title">Definitions</div>
-            <div class="match-list">
-              ${state.definitionOrder.map(defIndex => {
-                const assigned = Object.entries(assignments)
-                  .find(([key]) => Number(key) === defIndex);
-
-                const isMatched = Boolean(assigned);
-                const termIndex = isMatched ? Number(assigned[1]) : -1;
-                const isCorrect = isMatched && termIndex === defIndex;
-
-                return `
-                  <div class="match-item drop-target
-                    ${isMatched ? "matched" : ""}
-                    ${isMatched && !isCorrect ? "incorrect" : ""}"
-                    data-definition="${defIndex}"
-                    tabindex="0"
-                    role="button"
-                    aria-label="Definition: ${escapeHTML(pairDefinition(pairs, defIndex))}">
-                    ${isMatched ? `
-                      <span class="matched-term">
-                        ${escapeHTML(pairs[termIndex].term)}
-                      </span>
-                    ` : ""}
-                    ${escapeHTML(pairDefinition(pairs, defIndex))}
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          </div>
-        </div>
-
-        <div class="match-result" id="matchResult" aria-live="polite">
-          ${getProgress()} of ${pairs.length} correct matches completed.
-        </div>
-
-        <div class="btn-row">
-          <button class="btn" id="clearMatches">Reset Matches</button>
-        </div>
-      `;
-
-      // Drag interactions
-      $("gameCard").querySelectorAll("[data-term]").forEach(el => {
-        el.addEventListener("dragstart", event => {
-          const i = Number(el.dataset.term);
-          if (usedTerms.includes(i)) {
-            event.preventDefault();
-            return;
-          }
-
-          draggedTerm = i;
-          event.dataTransfer.setData("text/plain", String(i));
-          event.dataTransfer.effectAllowed = "move";
-        });
-
-        // Keyboard support: Enter or Space selects a concept.
-        el.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            selectTerm(Number(el.dataset.term));
-          }
-        });
-
-        el.addEventListener("click", () => {
-          selectTerm(Number(el.dataset.term));
-        });
-      });
-
-      // Drop targets also support taps and keyboard activation.
-      $("gameCard").querySelectorAll("[data-definition]").forEach(el => {
-        el.addEventListener("dragover", event => {
-          event.preventDefault();
-          el.classList.add("over");
-        });
-
-        el.addEventListener("dragleave", () => {
-          el.classList.remove("over");
-        });
-
-        el.addEventListener("drop", event => {
-          event.preventDefault();
-          el.classList.remove("over");
-
-          const termIndex = event.dataTransfer.getData("text/plain");
-          const i = termIndex === "" ? draggedTerm : Number(termIndex);
-          if (i !== null && i !== undefined && termIndex !== "") {
-            assignMatch(i, Number(el.dataset.definition));
-          }
-        });
-
-        el.addEventListener("click", () => {
-          if (state.selectedTerm !== null) {
-            assignMatch(state.selectedTerm, Number(el.dataset.definition));
-          }
-        });
-
-        el.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            if (state.selectedTerm !== null) {
-              assignMatch(state.selectedTerm, Number(el.dataset.definition));
-            }
-          }
-        });
-      });
-
-      $("clearMatches").addEventListener("click", () => {
-        state.matchAssignments = {};
-        state.selectedTerm = null;
-        render();
-      });
-    }
-
-    function pairDefinition(pairs, index) {
-      return pairs[index].definition;
-    }
-
-    function selectTerm(termIndex) {
-      const state = lectureState();
-      const usedTerms = Object.values(state.matchAssignments);
-
-      if (usedTerms.includes(termIndex)) return;
-
-      state.selectedTerm =
-        state.selectedTerm === termIndex ? null : termIndex;
-
-      renderMatch();
-    }
-
-    function assignMatch(termIndex, definitionIndex) {
-      const state = lectureState();
-      const lecture = lectures[current];
-      const pairs = lecture.pairs;
-      const assignments = state.matchAssignments;
-
-      if (Object.values(assignments).includes(termIndex)) return;
-
-      // Allow an incorrect match to be corrected.
-      const oldAssignment = assignments[definitionIndex];
-
-      if (oldAssignment !== undefined) {
-        if (oldAssignment === definitionIndex) {
-          // A previously correct pair cannot be overwritten.
-          return;
-        }
-
-        delete assignments[definitionIndex];
-      }
-
-      assignments[definitionIndex] = termIndex;
-      state.selectedTerm = null;
-
-      if (termIndex === definitionIndex) {
-        state.score += 10;
-      } else {
-        // Let the learner retry incorrect matches.
-        setTimeout(() => {
-          if (current !== lectures.indexOf(lecture)) return;
-          if (state.matchAssignments[definitionIndex] === termIndex) {
-            delete state.matchAssignments[definitionIndex];
-            render();
-          }
-        }, 1000);
-      }
-
-      render();
-    }
-
-    /* ==========================================================
-       GAME 3: FILL IN THE BLANK
-       ========================================================== */
-
-    function normalizeAnswer(value) {
-      return value.trim().toLowerCase().replace(/[.,!?;:]+$/g, "");
-    }
-
-    function renderFill() {
-      const lecture = lectures[current];
-      const state = lectureState();
-      const index = state.index;
-      const q = getQuestion();
-      const answered = state.answered[index];
-
-      $("gameCard").innerHTML = `
-        ${gameHeader("GAME 03", "Fill the Gap", index, lecture.questions.length)}
-
-        <h3 class="question">${escapeHTML(q.question)}</h3>
-
-        <form class="fill-form" id="fillForm">
-          <input
-            class="fill-input"
-            id="fillInput"
-            type="text"
-            placeholder="Type your answer..."
-            autocomplete="off"
-            aria-label="Your answer"
-            value="${escapeHTML(state.fillValue)}"
-            ${answered ? "disabled" : ""}
-            required
-          >
-          <button class="btn btn-primary" type="submit"
-            ${answered ? "disabled" : ""}>
-            Check Answer
-          </button>
-        </form>
-
-        <p class="hint">HINT: ${escapeHTML(q.hint || "Think back to the lecture.")}</p>
-
-        ${feedbackHTML(answered ? {
-          correct: answered.correct,
-          message: (answered.correct ? "Well done! " : "Accepted answer: " +
-            q.answers[0] + ". ") + q.explanation
-        } : state.fillFeedback)}
-
-        <div class="btn-row">
-          ${answered ? `
-            <button class="btn btn-primary" id="nextFill">
-              ${index + 1 === lecture.questions.length
-                ? "Finish Lecture" : "Next Question →"}
-            </button>
-          ` : `
-            <button class="btn" id="showHint">Show Hint</button>
-          `}
-        </div>
-      `;
-
-      const input = $("fillInput");
-
-      input.addEventListener("input", () => {
-        state.fillValue = input.value;
-      });
-
-      $("fillForm").addEventListener("submit", event => {
-        event.preventDefault();
-
-        const value = normalizeAnswer(input.value);
-        if (!value) return;
-
-        const correct = q.answers.some(
-          answer => normalizeAnswer(answer) === value
-        );
-
-        state.answered[index] = { correct, choice: value };
-        state.fillFeedback = null;
-
-        if (correct) state.score += 10;
-        render();
-      });
-
-      const hintButton = $("showHint");
-      if (hintButton) {
-        hintButton.addEventListener("click", () => {
-          state.fillFeedback = {
-            correct: false,
-            message: q.hint || "Think back to the lecture's key concepts."
-          };
-          renderFill();
-        });
-      }
-
-      const next = $("nextFill");
-      if (next) {
-        next.addEventListener("click", () => {
-          state.index++;
-          state.fillValue = "";
-          state.fillFeedback = null;
-          render();
-        });
-      }
-    }
-
-    // Start the experience.
-    render();
-  </script>
 </body>
 </html>
