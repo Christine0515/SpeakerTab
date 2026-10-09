@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f7f4">
+  <title>Guest Speaker Arcade</title>
+
+  <style>
+    /* ===== 1. 全局样式：修改这里可以更换主题颜色 ===== */
+    :root {
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --text: #20251f;
+      --muted: #777d74;
+      --primary: #365d4b;
+      --primary-light: #e5eee7;
+      --border: #e7e8e1;
+      --correct: #26734d;
+      --wrong: #bd4848;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #a3cbb0;
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: min(1060px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    /* ===== 2. 顶部品牌区域 ===== */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.8);
+    }
+
+    .header-inner {
+      min-height: 76px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand {
+      font-weight: 850;
+      font-size: 20px;
+      letter-spacing: -1px;
+    }
+
+    .brand span { color: var(--primary); }
+
+    .semester {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ===== 3. 页面介绍 ===== */
+    .hero { padding: 46px 0 24px; }
+
+    .eyebrow {
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.12;
+      letter-spacing: -2px;
+    }
+
+    .hero p {
+      max-width: 620px;
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+
+    /* ===== 4. 讲师 Tabs ===== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 0 16px;
+      scrollbar-width: thin;
+    }
+
+    .tab {
+      flex: 0 0 auto;
+      min-width: 150px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      text-align: left;
+      color: var(--text);
+      transition: .2s;
+    }
+
+    .tab:hover { border-color: var(--primary); }
+
+    .tab.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .tab-name {
+      display: block;
+      font-weight: 750;
+      font-size: 14px;
+    }
+
+    .tab-type {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      opacity: .75;
+    }
+
+    /* ===== 5. 讲座信息与进度 ===== */
+    .lecture-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px 0 18px;
+    }
+
+    h2 {
+      font-size: clamp(23px, 4vw, 30px);
+      line-height: 1.2;
+      letter-spacing: -.8px;
+      margin: 5px 0 8px;
+    }
+
+    .lecture-description {
+      color: var(--muted);
+      max-width: 650px;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .score-box {
+      min-width: 105px;
+      padding: 12px 15px;
+      background: var(--primary-light);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .score-number {
+      font-size: 25px;
+      font-weight: 850;
+      color: var(--primary);
+    }
+
+    .score-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .progress-track {
+      height: 5px;
+      background: #e5e6df;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: var(--primary);
+      transition: width .3s;
+    }
+
+    /* ===== 6. 游戏卡片 ===== */
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(20px, 4vw, 32px);
+      margin-bottom: 50px;
+      box-shadow: 0 8px 35px rgba(30,40,30,.035);
+    }
+
+    .game-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .game-badge {
+      display: inline-flex;
+      padding: 6px 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .7px;
+    }
+
+    .question-count {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .question {
+      font-size: clamp(19px, 3vw, 25px);
+      line-height: 1.4;
+      font-weight: 750;
+      letter-spacing: -.4px;
+      margin: 0 0 22px;
+    }
+
+    /* Quiz options */
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      width: 100%;
+      padding: 15px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      color: var(--text);
+      transition: .2s;
+    }
+
+    .option:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #fafcf9;
+    }
+
+    .option:disabled { cursor: default; }
+
+    .option-letter {
+      display: grid;
+      place-items: center;
+      flex: 0 0 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #f0f1ec;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .option.correct {
+      border-color: var(--correct);
+      background: #edf7f0;
+    }
+
+    .option.correct .option-letter {
+      background: var(--correct);
+      color: white;
+    }
+
+    .option.wrong {
+      border-color: var(--wrong);
+      background: #fff0ef;
+    }
+
+    .option.wrong .option-letter {
+      background: var(--wrong);
+      color: white;
+    }
+
+    /* Feedback and buttons */
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #f5f6f1;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .feedback.show { display: block; }
+    .feedback strong { display: block; margin-bottom: 4px; }
+    .feedback p { margin: 0; color: #555c53; }
+
+    .feedback.success { background: #edf7f0; }
+    .feedback.error { background: #fff0ef; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 18px;
+      background: white;
+      color: var(--text);
+      font-weight: 750;
+      font-size: 13px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .btn:hover { opacity: .86; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ===== 7. 拖拽匹配游戏 ===== */
+    .match-instruction {
+      color: var(--muted);
+      font-size: 13px;
+      margin: -10px 0 22px;
+    }
+
+    .match-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .match-column-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .match-list {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .match-item {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 13px;
+      min-height: 56px;
+      overflow-wrap: anywhere;
+    }
+
+    .match-item.term {
+      cursor: grab;
+      font-weight: 750;
+      touch-action: manipulation;
+    }
+
+    .match-item.term.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .match-item.term.used {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .match-item.drop-target {
+      cursor: pointer;
+      border-style: dashed;
+    }
+
+    .match-item.drop-target.over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .match-item.matched {
+      border-color: #9cc9aa;
+      background: #edf7f0;
+      border-style: solid;
+    }
+
+    .match-item.matched.incorrect {
+      border-color: #e7aaaa;
+      background: #fff0ef;
+    }
+
+    .match-item .matched-term {
+      display: block;
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    .match-result {
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ===== 8. 填空游戏 ===== */
+    .fill-form {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .fill-input {
+      min-width: 0;
+      flex: 1;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: white;
+      color: var(--text);
+    }
+
+    .hint {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .completion {
+      padding: 24px;
+      text-align: center;
+      border-radius: 14px;
+      background: var(--primary-light);
+    }
+
+    .completion .big {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    footer {
+      text-align: center;
+      padding: 0 0 30px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .container { width: calc(100% - 24px); }
+      .header-inner { min-height: 64px; }
+      .hero { padding-top: 32px; }
+      .lecture-heading { flex-direction: column; }
+      .score-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 8px 12px;
+      }
+      .score-number { font-size: 20px; }
+      .match-grid { grid-template-columns: 1fr; gap: 16px; }
+      .fill-form { flex-direction: column; }
+      .fill-form .btn { width: 100%; }
+      .game-card { margin-bottom: 30px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">SPEAKER<span>LAB.</span></div>
+      <div class="semester">Guest Lecture Series · Semester 1</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="eyebrow">Learn by playing</div>
+      <h1>Good talks.<br>Better takeaways.</h1>
+      <p>
+        Revisit this semester's guest lectures through quick interactive
+        challenges. Choose a speaker, test your knowledge, and see what sticks.
+      </p>
+    </section>
+
+    <!-- Tabs are generated automatically from the lectures array -->
+    <nav class="tabs" id="tabs" aria-label="Choose a guest speaker"></nav>
+
+    <!-- Lecture title, description, score and game -->
+    <section aria-live="polite">
+      <div class="lecture-heading">
+        <div>
+          <div class="eyebrow" id="lectureNumber">LECTURE 01</div>
+          <h2 id="lectureTitle"></h2>
+          <p class="lecture-description" id="lectureDescription"></p>
+        </div>
+
+        <div class="score-box">
+          <div class="score-number" id="score">0</div>
+          <div class="score-label">POINTS EARNED</div>
+        </div>
+      </div>
+
+      <div
+        class="progress-track"
+        role="progressbar"
+        aria-label="Lecture game progress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        id="progressTrack"
+      >
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="game-card" id="gameCard"></div>
+    </section>
+  </main>
+
+  <footer>
+    SPEAKERLAB. · Learn something. Keep something.
+  </footer>
+
+  <script>
+    /* ==========================================================
+       EDIT YOUR CONTENT HERE
+       Add, remove or edit objects inside the lectures array.
+       Each lecture has its own title, speaker, game and questions.
+       Game types: "quiz", "match", "fill"
+       ========================================================== */
+
+    const lectures = [
+      {
+        speaker: "Alex Morgan",
+        role: "Brand Strategy",
+        title: "Building Brands That Matter",
+        description:
+          "Explore how brands create meaning, connect with audiences, and stand out in a competitive market.",
+
+        game: "quiz",
+
+        questions: [
+          {
+            question: "What is the main purpose of brand positioning?",
+            options: [
+              "To make every product cheaper",
+              "To establish a distinct place in consumers' minds",
+              "To increase the number of social media posts",
+              "To copy successful competitors"
+            ],
+            answer: 1,
+            explanation:
+              "Brand positioning defines how a brand should be perceived relative to competitors."
+          },
+          {
+            question: "Which is the strongest starting point for a brand strategy?",
+            options: [
+              "Choosing a random colour palette",
+              "Following every design trend",
+              "Understanding the target audience",
+              "Copying a competitor's tagline"
+            ],
+            answer: 2,
+            explanation:
+              "Audience needs and motivations help determine a relevant brand promise."
+          },
+          {
+            question: "What makes a brand distinctive?",
+            options: [
+              "A clear and recognisable identity",
+              "Using as many fonts as possible",
+              "Changing its message every day",
+              "Avoiding all emotional connections"
+            ],
+            answer: 0,
+            explanation:
+              "A distinctive identity helps consumers recognise and remember the brand."
+          }
+        ]
+      },
+
+      {
+        speaker: "Jamie Lee",
+        role: "Creative Thinking",
+        title: "From Insight to Big Idea",
+        description:
+          "Match key creative concepts with their meanings and revisit the foundations of an effective campaign.",
+
+        game: "match",
+
+        pairs: [
+          {
+            term: "Consumer Insight",
+            definition:
+              "A meaningful truth about people's motivations or behaviour."
+          },
+          {
+            term: "Big Idea",
+            definition:
+              "The central creative thought that connects a campaign."
+          },
+          {
+            term: "Target Audience",
+            definition:
+              "The specific group a communication is designed to reach."
+          },
+          {
+            term: "Call to Action",
+            definition:
+              "A prompt that encourages the audience to take a next step."
+          }
+        ]
+      },
+
+      {
+        speaker: "Taylor Chen",
+        role: "Advertising & Media",
+        title: "Making Messages Stick",
+        description:
+          "Complete the key concepts about memorable communication and effective advertising.",
+
+        game: "fill",
+
+        questions: [
+          {
+            question:
+              "A short phrase that captures a brand or campaign's message is called a ______.",
+            answers: ["tagline", "slogan"],
+            hint: "It is often a short, memorable line associated with a brand.",
+            explanation:
+              "A tagline is a concise line that expresses or reinforces a brand's message."
+          },
+          {
+            question:
+              "The group of people a campaign is designed to reach is its target ______.",
+            answers: ["audience", "market"],
+            hint: "Think about who the campaign is speaking to.",
+            explanation:
+              "Target audience refers to the people a campaign aims to reach."
+          },
+          {
+            question:
+              "A measurable result a campaign aims to achieve is a communication ______.",
+            answers: ["objective", "goal"],
+            hint: "It describes what the campaign is trying to accomplish.",
+            explanation:
+              "An objective sets out the intended result of a campaign."
+          }
+        ]
+      }
+
+      /*
+      ===== ADD ANOTHER LECTURE =====
+
+      Copy one of the objects above and change its content.
+
+      For a quiz:
+      game: "quiz"
+      questions: [
+        {
+          question: "Your question?",
+          options: ["Answer A", "Answer B", "Answer C", "Answer D"],
+          answer: 0, // Correct option index starts at 0
+          explanation: "Why this answer is correct."
+        }
+      ]
+
+      For matching:
+      game: "match"
+      pairs: [
+        { term: "Concept A", definition: "Its definition." },
+        { term: "Concept B", definition: "Its definition." }
+      ]
+
+      For fill-in-the-blank:
+      game: "fill"
+      questions: [
+        {
+          question: "The missing word is ______.",
+          answers: ["answer", "another accepted answer"],
+          hint: "A helpful clue.",
+          explanation: "The answer explained."
+        }
+      ]
+      */
+    ];
+
+    /* ===== Game state: preserved when switching speakers ===== */
+
+    const states = lectures.map(lecture => ({
+      index: 0,
+      score: 0,
+      answered: {},
+      matchAssignments: {},
+      selectedTerm: null,
+      fillValue: "",
+      fillFeedback: null
+    }));
+
+    let current = 0;
+    let draggedTerm = null;
+
+    const $ = id => document.getElementById(id);
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function shuffle(items) {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function lectureState() {
+      return states[current];
+    }
+
+    function getQuestion() {
+      const lecture = lectures[current];
+      return lecture.questions?.[lectureState().index];
+    }
+
+    function getTotal() {
+      const lecture = lectures[current];
+      return lecture.game === "match"
+        ? lecture.pairs.length
+        : lecture.questions.length;
+    }
+
+    function getProgress() {
+      const state = lectureState();
+      const lecture = lectures[current];
+
+      if (lecture.game === "match") {
+        return Object.keys(state.matchAssignments).length;
+      }
+
+      return Object.keys(state.answered).length;
+    }
+
+    /* ===== Create speaker tabs ===== */
+
+    function renderTabs() {
+      $("tabs").innerHTML = lectures.map((lecture, i) => `
+        <button
+          class="tab ${i === current ? "active" : ""}"
+          data-tab="${i}"
+          aria-pressed="${i === current}"
+        >
+          <span class="tab-name">${escapeHTML(lecture.speaker)}</span>
+          <span class="tab-type">${escapeHTML(lecture.role)}</span>
+        </button>
+      `).join("");
+
+      $("tabs").querySelectorAll("[data-tab]").forEach(button => {
+        button.addEventListener("click", () => {
+          current = Number(button.dataset.tab);
+          render();
+        });
+      });
+    }
+
+    /* ===== Render the current lecture ===== */
+
+    function render() {
+      const lecture = lectures[current];
+      const state = lectureState();
+
+      renderTabs();
+
+      $("lectureNumber").textContent =
+        `LECTURE ${String(current + 1).padStart(2, "0")} · ${lecture.role}`;
+
+      $("lectureTitle").textContent = lecture.title;
+      $("lectureDescription").textContent = lecture.description;
+      $("score").textContent = state.score;
+
+      const progress = getProgress();
+      const total = getTotal();
+      const percent = total ? Math.round(progress / total * 100) : 0;
+
+      $("progressFill").style.width = `${percent}%`;
+      $("progressTrack").setAttribute("aria-valuenow", percent);
+
+      if (progress === total && total > 0) {
+        renderCompletion();
+      } else if (lecture.game === "quiz") {
+        renderQuiz();
+      } else if (lecture.game === "match") {
+        renderMatch();
+      } else if (lecture.game === "fill") {
+        renderFill();
+      }
+    }
+
+    function renderCompletion() {
+      const state = lectureState();
+      const total = getTotal();
+
+      $("gameCard").innerHTML = `
+        <div class="completion">
+          <div class="eyebrow">LECTURE COMPLETED</div>
+          <div class="big">${state.score}</div>
+          <h2>Nice work!</h2>
+          <p>
+            You've completed all ${total} challenges in this lecture.
+            Keep exploring the other speakers to review more concepts.
+          </p>
+          <button class="btn btn-primary" id="replay">Play Again</button>
+        </div>
+      `;
+
+      $("replay").addEventListener("click", resetCurrent);
+    }
+
+    function resetCurrent() {
+      states[current] = {
+        index: 0,
+        score: 0,
+        answered: {},
+        matchAssignments: {},
+        selectedTerm: null,
+        fillValue: "",
+        fillFeedback: null
+      };
+
+      render();
+    }
+
+    function gameHeader(type, label, index, total) {
+      return `
+        <div class="game-top">
+          <span class="game-badge">${type} · ${label}</span>
+          <span class="question-count">
+            Challenge ${index + 1} of ${total}
+          </span>
+        </div>
+      `;
+    }
+
+    function feedbackHTML(feedback) {
+      if (!feedback) return "";
+
+      return `
+        <div class="feedback show ${feedback.correct ? "success" : "error"}"
+             role="status">
+          <strong>${feedback.correct ? "✓ Correct!" : "Not quite yet."}</strong>
+          <p>${escapeHTML(feedback.message)}</p>
+        </div>
+      `;
+    }
+
+    /* ==========================================================
+       GAME 1: MULTIPLE-CHOICE QUIZ
+       ========================================================== */
+
+    function renderQuiz() {
+      const lecture = lectures[current];
+      const state = lectureState();
+      const index = state.index;
+      const q = getQuestion();
+      const answered = state.answered[index];
+
+      $("gameCard").innerHTML = `
+        ${gameHeader("GAME 01", "Quick Quiz", index, lecture.questions.length)}
+
+        <h3 class="question">${escapeHTML(q.question)}</h3>
+
+        <div class="options">
+          ${q.options.map((option, i) => {
+            let className = "option";
+
+            if (answered && i === q.answer) className += " correct";
+            if (answered && i === answered.choice && !answered.correct) {
+              className += " wrong";
+            }
+
+            return `
+              <button class="${className}" data-option="${i}"
+                ${answered ? "disabled" : ""}>
+                <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                <span>${escapeHTML(option)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+
+        ${feedbackHTML(answered ? {
+          correct: answered.correct,
+          message: (answered.correct ? "Well done! " : "Correct answer: " +
+            q.options[q.answer] + ". ") + q.explanation
+        } : null)}
+
+        <div class="btn-row">
+          ${answered ? `
+            <button class="btn btn-primary" id="nextQuestion">
+              ${index + 1 === lecture.questions.length
+                ? "Finish Lecture" : "Next Question →"}
+            </button>
+          ` : `
+            <button class="btn" id="skipQuestion">Skip Question</button>
+          `}
+        </div>
+      `;
+
+      $("gameCard").querySelectorAll("[data-option]").forEach(button => {
+        button.addEventListener("click", () => {
+          const choice = Number(button.dataset.option);
+          const correct = choice === q.answer;
+
+          state.answered[index] = { choice, correct };
+          if (correct) state.score += 10;
+
+          render();
+        });
+      });
+
+      const next = $("nextQuestion");
+      if (next) {
+        next.addEventListener("click", () => {
+          state.index++;
+          render();
+        });
+      }
+
+      const skip = $("skipQuestion");
+      if (skip) {
+        skip.addEventListener("click", () => {
+          // Skipping counts as completed but earns no points.
+          state.answered[index] = {
+            choice: -1,
+            correct: false,
+            skipped: true
+          };
+          render();
+        });
+      }
+    }
+
+    /* ==========================================================
+       GAME 2: DRAG-AND-DROP / TAP-TO-MATCH
+       Works on desktop and mobile.
+       ========================================================== */
+
+    function renderMatch() {
+      const lecture = lectures[current];
+      const state = lectureState();
+      const pairs = lecture.pairs;
+
+      // Keep a consistent randomized order for the definitions.
+      if (!state.definitionOrder) {
+        state.definitionOrder = shuffle(pairs.map((_, i) => i));
+      }
+
+      const assignments = state.matchAssignments;
+      const usedTerms = Object.values(assignments);
+      const selected = state.selectedTerm;
+
+      $("gameCard").innerHTML = `
+        ${gameHeader("GAME 02", "Match It", getProgress(), pairs.length)}
+
+        <h3 class="question">Connect each concept to its meaning.</h3>
+        <p class="match-instruction">
+          Drag a concept onto a definition, or tap a concept and then its
+          matching definition. Incorrect matches can be tried again.
+        </p>
+
+        <div class="match-grid">
+          <div>
+            <div class="match-column-title">Concepts</div>
+            <div class="match-list">
+              ${pairs.map((pair, i) => {
+                const used = usedTerms.includes(i);
+                return `
+                  <div class="match-item term
+                    ${used ? "used" : ""}
+                    ${selected === i ? "selected" : ""}"
+                    draggable="${!used}"
+                    role="button"
+                    tabindex="${used ? "-1" : "0"}"
+                    aria-label="Concept: ${escapeHTML(pair.term)}"
+                    data-term="${i}"
+                    ${used ? 'aria-disabled="true"' : ""}>
+                    ${escapeHTML(pair.term)}
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
+          <div>
+            <div class="match-column-title">Definitions</div>
+            <div class="match-list">
+              ${state.definitionOrder.map(defIndex => {
+                const assigned = Object.entries(assignments)
+                  .find(([key]) => Number(key) === defIndex);
+
+                const isMatched = Boolean(assigned);
+                const termIndex = isMatched ? Number(assigned[1]) : -1;
+                const isCorrect = isMatched && termIndex === defIndex;
+
+                return `
+                  <div class="match-item drop-target
+                    ${isMatched ? "matched" : ""}
+                    ${isMatched && !isCorrect ? "incorrect" : ""}"
+                    data-definition="${defIndex}"
+                    tabindex="0"
+                    role="button"
+                    aria-label="Definition: ${escapeHTML(pairDefinition(pairs, defIndex))}">
+                    ${isMatched ? `
+                      <span class="matched-term">
+                        ${escapeHTML(pairs[termIndex].term)}
+                      </span>
+                    ` : ""}
+                    ${escapeHTML(pairDefinition(pairs, defIndex))}
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        </div>
+
+        <div class="match-result" id="matchResult" aria-live="polite">
+          ${getProgress()} of ${pairs.length} correct matches completed.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" id="clearMatches">Reset Matches</button>
+        </div>
+      `;
+
+      // Drag interactions
+      $("gameCard").querySelectorAll("[data-term]").forEach(el => {
+        el.addEventListener("dragstart", event => {
+          const i = Number(el.dataset.term);
+          if (usedTerms.includes(i)) {
+            event.preventDefault();
+            return;
+          }
+
+          draggedTerm = i;
+          event.dataTransfer.setData("text/plain", String(i));
+          event.dataTransfer.effectAllowed = "move";
+        });
+
+        // Keyboard support: Enter or Space selects a concept.
+        el.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            selectTerm(Number(el.dataset.term));
+          }
+        });
+
+        el.addEventListener("click", () => {
+          selectTerm(Number(el.dataset.term));
+        });
+      });
+
+      // Drop targets also support taps and keyboard activation.
+      $("gameCard").querySelectorAll("[data-definition]").forEach(el => {
+        el.addEventListener("dragover", event => {
+          event.preventDefault();
+          el.classList.add("over");
+        });
+
+        el.addEventListener("dragleave", () => {
+          el.classList.remove("over");
+        });
+
+        el.addEventListener("drop", event => {
+          event.preventDefault();
+          el.classList.remove("over");
+
+          const termIndex = event.dataTransfer.getData("text/plain");
+          const i = termIndex === "" ? draggedTerm : Number(termIndex);
+          if (i !== null && i !== undefined && termIndex !== "") {
+            assignMatch(i, Number(el.dataset.definition));
+          }
+        });
+
+        el.addEventListener("click", () => {
+          if (state.selectedTerm !== null) {
+            assignMatch(state.selectedTerm, Number(el.dataset.definition));
+          }
+        });
+
+        el.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            if (state.selectedTerm !== null) {
+              assignMatch(state.selectedTerm, Number(el.dataset.definition));
+            }
+          }
+        });
+      });
+
+      $("clearMatches").addEventListener("click", () => {
+        state.matchAssignments = {};
+        state.selectedTerm = null;
+        render();
+      });
+    }
+
+    function pairDefinition(pairs, index) {
+      return pairs[index].definition;
+    }
+
+    function selectTerm(termIndex) {
+      const state = lectureState();
+      const usedTerms = Object.values(state.matchAssignments);
+
+      if (usedTerms.includes(termIndex)) return;
+
+      state.selectedTerm =
+        state.selectedTerm === termIndex ? null : termIndex;
+
+      renderMatch();
+    }
+
+    function assignMatch(termIndex, definitionIndex) {
+      const state = lectureState();
+      const lecture = lectures[current];
+      const pairs = lecture.pairs;
+      const assignments = state.matchAssignments;
+
+      if (Object.values(assignments).includes(termIndex)) return;
+
+      // Allow an incorrect match to be corrected.
+      const oldAssignment = assignments[definitionIndex];
+
+      if (oldAssignment !== undefined) {
+        if (oldAssignment === definitionIndex) {
+          // A previously correct pair cannot be overwritten.
+          return;
+        }
+
+        delete assignments[definitionIndex];
+      }
+
+      assignments[definitionIndex] = termIndex;
+      state.selectedTerm = null;
+
+      if (termIndex === definitionIndex) {
+        state.score += 10;
+      } else {
+        // Let the learner retry incorrect matches.
+        setTimeout(() => {
+          if (current !== lectures.indexOf(lecture)) return;
+          if (state.matchAssignments[definitionIndex] === termIndex) {
+            delete state.matchAssignments[definitionIndex];
+            render();
+          }
+        }, 1000);
+      }
+
+      render();
+    }
+
+    /* ==========================================================
+       GAME 3: FILL IN THE BLANK
+       ========================================================== */
+
+    function normalizeAnswer(value) {
+      return value.trim().toLowerCase().replace(/[.,!?;:]+$/g, "");
+    }
+
+    function renderFill() {
+      const lecture = lectures[current];
+      const state = lectureState();
+      const index = state.index;
+      const q = getQuestion();
+      const answered = state.answered[index];
+
+      $("gameCard").innerHTML = `
+        ${gameHeader("GAME 03", "Fill the Gap", index, lecture.questions.length)}
+
+        <h3 class="question">${escapeHTML(q.question)}</h3>
+
+        <form class="fill-form" id="fillForm">
+          <input
+            class="fill-input"
+            id="fillInput"
+            type="text"
+            placeholder="Type your answer..."
+            autocomplete="off"
+            aria-label="Your answer"
+            value="${escapeHTML(state.fillValue)}"
+            ${answered ? "disabled" : ""}
+            required
+          >
+          <button class="btn btn-primary" type="submit"
+            ${answered ? "disabled" : ""}>
+            Check Answer
+          </button>
+        </form>
+
+        <p class="hint">HINT: ${escapeHTML(q.hint || "Think back to the lecture.")}</p>
+
+        ${feedbackHTML(answered ? {
+          correct: answered.correct,
+          message: (answered.correct ? "Well done! " : "Accepted answer: " +
+            q.answers[0] + ". ") + q.explanation
+        } : state.fillFeedback)}
+
+        <div class="btn-row">
+          ${answered ? `
+            <button class="btn btn-primary" id="nextFill">
+              ${index + 1 === lecture.questions.length
+                ? "Finish Lecture" : "Next Question →"}
+            </button>
+          ` : `
+            <button class="btn" id="showHint">Show Hint</button>
+          `}
+        </div>
+      `;
+
+      const input = $("fillInput");
+
+      input.addEventListener("input", () => {
+        state.fillValue = input.value;
+      });
+
+      $("fillForm").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const value = normalizeAnswer(input.value);
+        if (!value) return;
+
+        const correct = q.answers.some(
+          answer => normalizeAnswer(answer) === value
+        );
+
+        state.answered[index] = { correct, choice: value };
+        state.fillFeedback = null;
+
+        if (correct) state.score += 10;
+        render();
+      });
+
+      const hintButton = $("showHint");
+      if (hintButton) {
+        hintButton.addEventListener("click", () => {
+          state.fillFeedback = {
+            correct: false,
+            message: q.hint || "Think back to the lecture's key concepts."
+          };
+          renderFill();
+        });
+      }
+
+      const next = $("nextFill");
+      if (next) {
+        next.addEventListener("click", () => {
+          state.index++;
+          state.fillValue = "";
+          state.fillFeedback = null;
+          render();
+        });
+      }
+    }
+
+    // Start the experience.
+    render();
+  </script>
+</body>
+</html>
